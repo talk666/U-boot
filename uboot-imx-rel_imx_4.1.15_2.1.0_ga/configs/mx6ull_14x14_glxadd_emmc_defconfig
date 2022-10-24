@@ -1,0 +1,6 @@
+#add by glx设置为自己新建的板级文件
+CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6ull_glxadd_emmc/imximage.cfg,MX6ULL_EVK_EMMC_REWORK"
+CONFIG_ARM=y
+CONFIG_ARCH_MX6=y
+CONFIG_TARGET_MX6ULL_14X14_GLXADD_EMMC=y
+CONFIG_CMD_GPIO=y

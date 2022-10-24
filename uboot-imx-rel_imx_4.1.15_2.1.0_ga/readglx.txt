@@ -7,3 +7,21 @@ imxdownload 拷贝到该目录下
 
 
 这是NXP官方修改的适配imx6ull芯片的uboot
+
+涉及文件
+MX6ULL_GLXADD_EMMC BOARD
+M:	Peng Fan <peng.fan@nxp.com>
+S:	Maintained
+F:	board/freescale/mx6ull_glxadd_emmc/
+F:	include/configs/mx6ull_glxadd_emmc.h
+F:	configs/mx6ull_14x14_glxadd_emmc_defconfig
+
+修改完必须！！！！！！！！！！！修改
+/home/glx/glx/NXP/Uboot/U-boot/uboot-imx-rel_imx_4.1.15_2.1.0_ga/arch/arm/cpu/armv7/mx6/Kconfig
+添加
+config TARGET_MX6ULL_14X14_GLXADD_EMMCG_
+	bool "Support mx6ull_glxadd_emmc"
+	select MX6ULL
+	select DM
+	select DM_THERMAL
+否则不生效
