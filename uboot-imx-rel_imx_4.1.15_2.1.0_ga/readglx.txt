@@ -1,0 +1,9 @@
+makefile 指定 ARCH=arm 
+CROSS_COMPILE=arm-linux-gnueabihf-
+
+
+./mx6ull_14x14_evk_emmc.sh 添加编译脚本
+imxdownload 拷贝到该目录下
+
+
+这是NXP官方修改的适配imx6ull芯片的uboot
