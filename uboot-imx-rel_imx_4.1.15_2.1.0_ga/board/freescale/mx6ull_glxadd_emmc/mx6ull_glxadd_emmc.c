@@ -88,21 +88,34 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_PUS_47K_UP  | PAD_CTL_SPEED_LOW |		\
 	PAD_CTL_DSE_80ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
 
+/*add by glx start
+
+IOX 开头的宏定义是 74LV595 的相关 GPIO，因为 NXP 官方
+I.MX6ULL EVK 开发板使用 74LV595 来扩展 IO，两个网络的复位引脚就是由 74LV595 来控制
+的。正点原子的 I.MX6U-ALPHA 开发板并没有使用 74LV595
+
 #define IOX_SDI IMX_GPIO_NR(5, 10)
 #define IOX_STCP IMX_GPIO_NR(5, 7)
 #define IOX_SHCP IMX_GPIO_NR(5, 11)
 #define IOX_OE IMX_GPIO_NR(5, 8)
+*/
+/*ENET1 的复位引脚连接到 SNVS_TAMPER7 上，对应 GPIO5_IO07，ENET2 的复位引脚连
+接到 SNVS_TAMPER8 上，对应 GPIO5_IO08。*/
+#define ENET1_RESET IMX_GPIO_NR(5, 7)
+#define ENET2_RESET IMX_GPIO_NR(5, 8)
 
-static iomux_v3_cfg_t const iox_pads[] = {
-	/* IOX_SDI */
-	MX6_PAD_BOOT_MODE0__GPIO5_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* IOX_SHCP */
-	MX6_PAD_BOOT_MODE1__GPIO5_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* IOX_STCP */
-	MX6_PAD_SNVS_TAMPER7__GPIO5_IO07 | MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* IOX_nOE */
-	MX6_PAD_SNVS_TAMPER8__GPIO5_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
+/*add by glx end*/
+
+// static iomux_v3_cfg_t const iox_pads[] = {
+// 	/* IOX_SDI */
+// 	MX6_PAD_BOOT_MODE0__GPIO5_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
+// 	/* IOX_SHCP */
+// 	MX6_PAD_BOOT_MODE1__GPIO5_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL),
+// 	/* IOX_STCP */
+// 	MX6_PAD_SNVS_TAMPER7__GPIO5_IO07 | MUX_PAD_CTRL(NO_PAD_CTRL),
+// 	/* IOX_nOE */
+// 	MX6_PAD_SNVS_TAMPER8__GPIO5_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL),
+// };
 
 /*
  * HDMI_nRST --> Q0
@@ -145,80 +158,80 @@ static enum qn_func qn_output[8] = {
 	qn_disable, qn_disable
 };
 
-static void iox74lv_init(void)
-{
-	int i;
+// static void iox74lv_init(void)
+// {
+// 	int i;
 
-	gpio_direction_output(IOX_OE, 0);
+// 	gpio_direction_output(IOX_OE, 0);
 
-	for (i = 7; i >= 0; i--) {
-		gpio_direction_output(IOX_SHCP, 0);
-		gpio_direction_output(IOX_SDI, seq[qn_output[i]][0]);
-		udelay(500);
-		gpio_direction_output(IOX_SHCP, 1);
-		udelay(500);
-	}
+// 	for (i = 7; i >= 0; i--) {
+// 		gpio_direction_output(IOX_SHCP, 0);
+// 		gpio_direction_output(IOX_SDI, seq[qn_output[i]][0]);
+// 		udelay(500);
+// 		gpio_direction_output(IOX_SHCP, 1);
+// 		udelay(500);
+// 	}
 
-	gpio_direction_output(IOX_STCP, 0);
-	udelay(500);
-	/*
-	 * shift register will be output to pins
-	 */
-	gpio_direction_output(IOX_STCP, 1);
+// 	gpio_direction_output(IOX_STCP, 0);
+// 	udelay(500);
+// 	/*
+// 	 * shift register will be output to pins
+// 	 */
+// 	gpio_direction_output(IOX_STCP, 1);
 
-	for (i = 7; i >= 0; i--) {
-		gpio_direction_output(IOX_SHCP, 0);
-		gpio_direction_output(IOX_SDI, seq[qn_output[i]][1]);
-		udelay(500);
-		gpio_direction_output(IOX_SHCP, 1);
-		udelay(500);
-	}
-	gpio_direction_output(IOX_STCP, 0);
-	udelay(500);
-	/*
-	 * shift register will be output to pins
-	 */
-	gpio_direction_output(IOX_STCP, 1);
-};
+// 	for (i = 7; i >= 0; i--) {
+// 		gpio_direction_output(IOX_SHCP, 0);
+// 		gpio_direction_output(IOX_SDI, seq[qn_output[i]][1]);
+// 		udelay(500);
+// 		gpio_direction_output(IOX_SHCP, 1);
+// 		udelay(500);
+// 	}
+// 	gpio_direction_output(IOX_STCP, 0);
+// 	udelay(500);
+// 	/*
+// 	 * shift register will be output to pins
+// 	 */
+// 	gpio_direction_output(IOX_STCP, 1);
+// };
 
-void iox74lv_set(int index)
-{
-	int i;
+// void iox74lv_set(int index)
+// {
+// 	int i;
 
-	for (i = 7; i >= 0; i--) {
-		gpio_direction_output(IOX_SHCP, 0);
+// 	for (i = 7; i >= 0; i--) {
+// 		gpio_direction_output(IOX_SHCP, 0);
 
-		if (i == index)
-			gpio_direction_output(IOX_SDI, seq[qn_output[i]][0]);
-		else
-			gpio_direction_output(IOX_SDI, seq[qn_output[i]][1]);
-		udelay(500);
-		gpio_direction_output(IOX_SHCP, 1);
-		udelay(500);
-	}
+// 		if (i == index)
+// 			gpio_direction_output(IOX_SDI, seq[qn_output[i]][0]);
+// 		else
+// 			gpio_direction_output(IOX_SDI, seq[qn_output[i]][1]);
+// 		udelay(500);
+// 		gpio_direction_output(IOX_SHCP, 1);
+// 		udelay(500);
+// 	}
 
-	gpio_direction_output(IOX_STCP, 0);
-	udelay(500);
-	/*
-	  * shift register will be output to pins
-	  */
-	gpio_direction_output(IOX_STCP, 1);
+// 	gpio_direction_output(IOX_STCP, 0);
+// 	udelay(500);
+// 	/*
+// 	  * shift register will be output to pins
+// 	  */
+// 	gpio_direction_output(IOX_STCP, 1);
 
-	for (i = 7; i >= 0; i--) {
-		gpio_direction_output(IOX_SHCP, 0);
-		gpio_direction_output(IOX_SDI, seq[qn_output[i]][1]);
-		udelay(500);
-		gpio_direction_output(IOX_SHCP, 1);
-		udelay(500);
-	}
+// 	for (i = 7; i >= 0; i--) {
+// 		gpio_direction_output(IOX_SHCP, 0);
+// 		gpio_direction_output(IOX_SDI, seq[qn_output[i]][1]);
+// 		udelay(500);
+// 		gpio_direction_output(IOX_SHCP, 1);
+// 		udelay(500);
+// 	}
 
-	gpio_direction_output(IOX_STCP, 0);
-	udelay(500);
-	/*
-	  * shift register will be output to pins
-	  */
-	gpio_direction_output(IOX_STCP, 1);
-};
+// 	gpio_direction_output(IOX_STCP, 0);
+// 	udelay(500);
+// 	/*
+// 	  * shift register will be output to pins
+// 	  */
+// 	gpio_direction_output(IOX_STCP, 1);
+// };
 
 
 #ifdef CONFIG_SYS_I2C_MXC
@@ -648,6 +661,7 @@ static iomux_v3_cfg_t const fec1_pads[] = {
 	MX6_PAD_ENET1_RX_DATA1__ENET1_RDATA01 | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET1_RX_ER__ENET1_RX_ER | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET1_RX_EN__ENET1_RX_EN | MUX_PAD_CTRL(ENET_PAD_CTRL),
+	MX6_PAD_SNVS_TAMPER7__GPIO5_IO07 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 static iomux_v3_cfg_t const fec2_pads[] = {
@@ -663,16 +677,39 @@ static iomux_v3_cfg_t const fec2_pads[] = {
 	MX6_PAD_ENET2_RX_DATA1__ENET2_RDATA01 | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET2_RX_EN__ENET2_RX_EN | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET2_RX_ER__ENET2_RX_ER | MUX_PAD_CTRL(ENET_PAD_CTRL),
+	/*addby glx 添加eht2网口复位端口复用为gpio5io08  上面一样*/
+	MX6_PAD_SNVS_TAMPER8__GPIO5_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	/*addby glx end*/
 };
 
+/*将这两个 IO 设置为输出并且硬件复位一下 LAN8720A，这个硬件复位很重要！
+第 689 行复位结束以后一定要至少延时 150ms 才能操作 SR8201F，这个在 SR8201F 数据手册
+里面有详细要求的，否则会导致 uboot 无法识别 SR8201F。*/
 static void setup_iomux_fec(int fec_id)
 {
-	if (fec_id == 0)
+	if (fec_id == 0) //eth1
+	{
 		imx_iomux_v3_setup_multiple_pads(fec1_pads,
 						 ARRAY_SIZE(fec1_pads));
+/*addby glx start*/
+		gpio_direction_output(ENET1_RESET, 1);
+		gpio_set_value(ENET1_RESET, 0);
+		mdelay(20);
+		gpio_set_value(ENET1_RESET, 1);
+		/*addby glx end*/
+	}
 	else
+	{
 		imx_iomux_v3_setup_multiple_pads(fec2_pads,
 						 ARRAY_SIZE(fec2_pads));
+		/*addby glx start*/
+		gpio_direction_output(ENET2_RESET, 1);
+		gpio_set_value(ENET2_RESET, 0);
+		mdelay(20);
+		gpio_set_value(ENET2_RESET, 1);
+		/*addby glx end*/
+	}
+	mdelay(150); /* 复位结束后至少延时 150ms 才能正常使用*/
 }
 
 int board_eth_init(bd_t *bis)
@@ -812,9 +849,9 @@ int board_init(void)
 	/* Address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
-	imx_iomux_v3_setup_multiple_pads(iox_pads, ARRAY_SIZE(iox_pads));
-
-	iox74lv_init();
+//	imx_iomux_v3_setup_multiple_pads(iox_pads, ARRAY_SIZE(iox_pads));
+//	74lv相关关闭
+//	iox74lv_init();
 
 #ifdef CONFIG_SYS_I2C_MXC
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
@@ -878,7 +915,7 @@ int checkboard(void)
 	if (is_mx6ull_9x9_evk())
 		puts("Board: MX6ULL 9x9 EVK\n");
 	else
-		puts("Board: MX6ULL 14x14 EVK\n");
+		puts("Board: MX6ULL GLXADD EMMC\n");
 
 	return 0;
 }
